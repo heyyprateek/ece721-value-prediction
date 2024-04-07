@@ -90,7 +90,7 @@ void pipeline_t::dispatch() {
    assert(i > 0);			// If we reached this point, there should be at least one instruction in the dispatch bundle.
    assert(i <= dispatch_width);		// There cannot be more than "dispatch_width" instructions in the dispatch bundle.
 
-   // FIX_ME #6 BEGIN
+   // FIX_ME #6 BEGIN 
    if(REN->stall_dispatch(i))
 		return;
    // FIX_ME #6 END
