@@ -208,6 +208,7 @@ void pipeline_t::dispatch() {
       	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
 			REN->set_ready(PAY.buf[index].C_phys_reg);
 		}
+		REN->write(PAY.buf[index].C_phys_reg,PAY.buf[index].predicted_value);
 //      if(PAY.buf[index].C_valid){
 //      	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
 //			REN->clear_ready(PAY.buf[index].C_phys_reg);

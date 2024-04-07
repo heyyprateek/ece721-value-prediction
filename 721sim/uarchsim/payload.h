@@ -179,7 +179,11 @@ typedef struct {
    unsigned int D_phys_reg;     // If there exists a third ** SOURCE ** register (D),
                                 // this is the physical register specifier to
                                 // which it is renamed.
-  
+   //Changes by Abhishek Bajaj
+   unsigned long int predicted_value;
+   //changes end Abhishek Bajaj
+
+
    // Branch ID, for checkpointed branches only.
    unsigned int branch_ID;      // When a checkpoint is created for a branch,
                                 // this is the branch's ID (its bit position
