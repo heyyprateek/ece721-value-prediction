@@ -70,7 +70,23 @@ static void help()
   fprintf(stderr, "  --L2=<SIZE>:<ASSOC>:<BLOCKSIZE>:<#MHSR>:<HITTIME>\tConfigure L2 $. Derived # sets must be power-of-2. Block size must be power-of-2.\n");
   fprintf(stderr, "  --L3=<SIZE>:<ASSOC>:<BLOCKSIZE>:<#MHSR>:<HITTIME>\tConfigure L3 $. Derived # sets must be power-of-2. Block size must be power-of-2.\n");
   fprintf(stderr, "  --MEMLAT=<latency>\tConfigure a fixed miss penalty for a miss in the LLC.\n");
-  exit(1);
+  // options for value prediction
+  fprintf(stderr, "  --vp-enable=<0/1>\tEnable (1) or disable (0) value prediction.\n");
+  fprintf(stderr, "  --vp-perf=<1>\tEnable perfect value prediction.\n");
+  fprintf(stderr, "  --vp-svp=<VPQsize>, number of VPQ entries \n \
+                              <oracleconf>, 0: real confidence, 1: oracle confidence \n \
+                              <# index bits>, # SVP entries is 2**(# index bits) \n \
+                              <# tag bits>, 0: no tag, 62-(# index bits): full tag, or somewhere between for partial tag \n \
+                              <confmax>, confidence threshold to be confident \n \
+                              <confinc>, amount by which to increment confidence (but saturate at confmax) \n \
+                              <confdec>, 0: reset confidence, >0: amount by which to decrement confidence (but saturate at 0) \n \
+                              <replace_stride>,If stride changes, only update the stride if conf <= replace_stride. This can be used for stride inertia. \n \
+                              <replace>, Replacement confidence threshold. Only used if SVP has tags and when the tag mismatches while training: replace if conf <= replace. \n \
+                              <predINTALU>, 1: predict integer ALU instructions with dest. reg., 0: don’t predict this instruction class \n \
+                              <predFPALU>, 1: predict flt.pt. ALU instructions with dest. reg., 0: don’t predict this instruction class \n \
+                              <predLOAD>, 1: predict load instructions with dest. reg., 0: don’t predict this instruction class \n \
+                              <VPQ_full_policy>If VPQ full and need entries for VP-eligible instructions in bundle: 0: stall bundle, 1: don’t allocate VPQ entries (gaps in training will affect confidence).");
+exit(1);
 }
 
 /* execution start time */
@@ -137,6 +153,68 @@ static void set_lane_latencies(const char* config) {
    if (sscanf(config, "%u:%u:%u:%u:%u:%u:%u", &(FU_LAT[0]), &(FU_LAT[1]), &(FU_LAT[2]), &(FU_LAT[3]), &(FU_LAT[4]), &(FU_LAT[5]), &(FU_LAT[6])) != 7) {
       fprintf(stderr, "Incorrect usage of --lat=<B>:<L>:<S>:<C>:<LFP>:<FP>:<MTF>\n");
       fprintf(stderr, "...where each of <X> is an unsigned integer indicating the latency of that instruction type.\n");
+   }
+}
+
+// function to perform action based on value prediction
+static void set_value_pred_en_flag(const char* config) {
+   uint64_t vp_enable;
+   if (sscanf(config, "%lu", &vp_enable) != 1) {
+      fprintf(stderr, "Incorrect usage of --vp-enable=<0/1>\n");
+      fprintf(stderr, "...where 0 disables value prediction and 1 enables value prediction.\n");
+      exit(-1);
+   }
+   else {
+      VALUE_PRED_EN = (vp_enable ? true : false);
+   }
+}
+
+static void set_perf_value_pred_flag(const char* config) {
+   uint64_t vp_perf;
+   if (sscanf(config, "%lu", &vp_perf) != 1) {
+      fprintf(stderr, "Incorrect usage of --vp-perf=<1>\n");
+      fprintf(stderr, "...where 1 enables perfect value prediction.\n");
+      exit(-1);
+   }
+   else {
+      PERFECT_VALUE_PRED = (vp_perf ? true : false);
+   }
+}
+
+static void set_svp_flags(const char* config) {
+   uint64_t vpq_size, svp_oracleconf, svp_index_bits, svp_tag_bits, svp_confmax, svp_confinc, svp_confdec, svp_replace_stride, svp_replace, svp_VPQ_full_policy;
+   bool svp_predINTALU, svp_predFPALU, svp_predLOAD;
+   if (sscanf(config, "%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%d,%d,%d,%lu", &vpq_size, &svp_oracleconf, &svp_index_bits, &svp_tag_bits, &svp_confmax, &svp_confinc, &svp_confdec, &svp_replace_stride, &svp_replace, &svp_predINTALU, &svp_predFPALU, &svp_predLOAD, &svp_VPQ_full_policy) != 13) {
+      fprintf(stderr, "Incorrect usage of --svp=<VPQsize>,<oracleconf>,<# index bits>,<# tag bits>,<confmax>,<confinc>,<confdec>,<replace_stride>,<replace>,<predINTALU>,<predFPALU>,<predLOAD>,<VPQ_full_policy>\n");
+      fprintf(stderr, "...where <VPQsize> is the number of VPQ entries, \n \
+                       <oracleconf> is 0 for real confidence and 1 for oracle confidence, \n \
+                       <# index bits> is the number of SVP entries (2**<# index bits>), \n \
+                       <# tag bits> is 0 for no tag, 62-(<# index bits>) for full tag, or somewhere between for partial tag, \n \
+                       <confmax> is the confidence threshold to be confident, \n \
+                       <confinc> is the amount by which to increment confidence (but saturate at <confmax>), \n\
+                       <confdec> is 0 to reset confidence or >0 to decrement confidence (but saturate at 0), \n \
+                       <replace_stride> is the threshold for stride changes, \n \
+                       <replace> is the replacement confidence threshold, \n \
+                       <predINTALU> is 1 to predict integer ALU instructions with dest. reg., \n \
+                       <predFPALU> is 1 to predict flt.pt. ALU instructions with dest. reg., \n \
+                       <predLOAD> is 1 to predict load instructions with dest. reg., \n \
+                       and <VPQ_full_policy> is 0 to stall bundle or 1 to not allocate VPQ entries.\n");
+      exit(-1);
+   }
+   else {
+      VPQ_SIZE = vpq_size;
+      SVP_ORACLECONF = (svp_oracleconf ? true : false);
+      SVP_INDEX_BITS = svp_index_bits;
+      SVP_TAG_BITS = svp_tag_bits;
+      SVP_CONFMAX = svp_confmax;
+      SVP_CONFINC = svp_confinc;
+      SVP_CONFDEC = svp_confdec;
+      SVP_REPLACE_STRIDE = svp;
+      SVP_REPLACE = svp_replace;
+      SVP_PREDINTALU = (svp_predINTALU ? true : false);
+      SVP_PREDFPALU = (svp_predFPALU ? true : false);
+      SVP_PREDLOAD = (svp_predLOAD ? true : false);
+      VPQ_FULL_POLICY = svp_VPQ_full_policy;
    }
 }
 
@@ -406,6 +484,11 @@ int main(int argc, char** argv)
       IDEAL_AGE_BASED = true;
       NUM_CHECKPOINTS = 64;
       FETCH_QUEUE_SIZE = 64;});
+  // options for value prediction
+  parser.option(0, "vp-enable", 1, [&](const char *s){set_value_pred_en_flag(s);});
+  parser.option(0, "vp-perf", 1, [&](const char *s){set_perf_value_pred_flag(s);});
+  parser.option(0, "vp-svp", 1, [&](const char *s){set_svp_flags(s);});
+
 
   auto argv1 = parser.parse(argv);
   if (!*argv1)

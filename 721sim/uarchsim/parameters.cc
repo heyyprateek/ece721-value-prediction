@@ -73,6 +73,25 @@ uint32_t FU_LAT[(unsigned int)NUMBER_FU_TYPES] = {1 /* BR     */ ,
 //                                                         };
                                                          
 
+// VALUE PREDICTION
+uint64_t VALUE_PRED_EN = 0;
+uint64_t PERFECT_VALUE_PRED = 0;
+uint64_t VPQ_SIZE = 0;
+uint64_t SVP_ORACLECONF = 0;
+uint64_t SVP_INDEX_BITS = 0;
+uint64_t SVP_TAG_BITS = 0;
+uint64_t SVP_CONFMAX = 0;
+uint64_t SVP_CONFINC = 0;
+uint64_t SVP_CONFDEC = 0;
+uint64_t SVP_REPLACE_STRIDE = 0;
+uint64_t SVP_REPLACE = 0;
+uint64_t SVP_PREDINTALU = 0;
+uint64_t SVP_PREDFPALU = 0;
+uint64_t SVP_PREDLOAD = 0;
+uint64_t VPQ_FULL_POLICY = 0;
+
+
+
 // L1 Data Cache.
 unsigned int L1_DC_SETS             = 256;
 unsigned int L1_DC_ASSOC            = 4;

@@ -40,6 +40,23 @@ extern bool         IDEAL_AGE_BASED;
 extern unsigned int FU_LANE_MATRIX[];
 extern unsigned int FU_LAT[];
 
+// VALUE PREDICTION
+extern uint64_t VALUE_PRED_EN;
+extern uint64_t PERFECT_VALUE_PRED;
+extern uint64_t VPQ_SIZE;
+extern uint64_t SVP_ORACLECONF;
+extern uint64_t SVP_INDEX_BITS;
+extern uint64_t SVP_TAG_BITS;
+extern uint64_t SVP_CONFMAX;
+extern uint64_t SVP_CONFINC;
+extern uint64_t SVP_CONFDEC;
+extern uint64_t SVP_REPLACE_STRIDE;
+extern uint64_t SVP_REPLACE;
+extern uint64_t SVP_PREDINTALU;
+extern uint64_t SVP_PREDFPALU;
+extern uint64_t SVP_PREDLOAD;
+extern uint64_t VPQ_FULL_POLICY;
+
 // L1 Data Cache.
 extern unsigned int L1_DC_SETS;
 extern unsigned int L1_DC_ASSOC;
