@@ -209,7 +209,7 @@ static void set_svp_flags(const char* config) {
       SVP_CONFMAX = svp_confmax;
       SVP_CONFINC = svp_confinc;
       SVP_CONFDEC = svp_confdec;
-      SVP_REPLACE_STRIDE = svp;
+      SVP_REPLACE_STRIDE = svp_replace_stride;
       SVP_REPLACE = svp_replace;
       SVP_PREDINTALU = (svp_predINTALU ? true : false);
       SVP_PREDFPALU = (svp_predFPALU ? true : false);
