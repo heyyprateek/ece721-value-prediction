@@ -204,16 +204,39 @@ void pipeline_t::dispatch() {
       // FIX_ME #9 BEGIN
 ////Changes by Abhishek Bajaj
 //
-      if(PAY.buf[index].C_valid){
-      	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
-			REN->set_ready(PAY.buf[index].C_phys_reg);
+      if(VALUE_PRED_EN){
+   	   	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
+   	   if(PERFECT_VALUE_PRED){
+				if(PAY.buf[index].C_valid && PAY.buf[index].good_instruction && !PAY.buf[index].branch){
+					REN->set_ready(PAY.buf[index].C_phys_reg);
+					
+   		      actual = get_pipe()->peek(PAY.buf[index].db_index);
+					REN->write(PAY.buf[index].C_phys_reg,actual->a_rdst[0].value);
+				}
+			}
+			else 
+			{
+				if(SVP_ORACLECONF){
+   		      actual = get_pipe()->peek(PAY.buf[index].db_index);
+					if(actual->a_rdst[0].value==PAY.buf[index].predicted_value){
+						REN->set_ready(PAY.buf[index].C_phys_reg);
+						REN->write(PAY.buf[index].C_phys_reg,PAY.buf[index].predicted_value);
+					}
+				}
+				else{
+
+				}
+			}
 		}
-		REN->write(PAY.buf[index].C_phys_reg,PAY.buf[index].predicted_value);
-//      if(PAY.buf[index].C_valid){
-//      	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
-//			REN->clear_ready(PAY.buf[index].C_phys_reg);
-//		}
-/////changes end
+		else
+		{
+/////////////////////old code////////////////////////////
+   	   if(PAY.buf[index].C_valid){
+   	   	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
+				REN->clear_ready(PAY.buf[index].C_phys_reg);
+			}
+		}
+/////changes end by Abhishek
 
  
 //		// FIX_ME #9 END

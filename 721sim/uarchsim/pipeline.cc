@@ -233,6 +233,14 @@ pipeline_t::pipeline_t(
   ////////////////////////////////////////////////////////////
   REN = new renamer(NXPR+NFPR, prf_size, num_chkpts, rob_size);
 
+//Changes by Abhishek Bajaj
+	if(VALUE_PRED_EN){
+		if(!PERFECT_VALUE_PRED){
+  			val_predictor = new value_predictor;
+		}
+	}
+//Changes end by Abhishek Bajaj
+
   /////////////////////////////////////////////////////////////
   // Pipeline register between the Rename and Dispatch Stages.
   /////////////////////////////////////////////////////////////

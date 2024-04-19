@@ -70,6 +70,7 @@ static void help()
   fprintf(stderr, "  --L2=<SIZE>:<ASSOC>:<BLOCKSIZE>:<#MHSR>:<HITTIME>\tConfigure L2 $. Derived # sets must be power-of-2. Block size must be power-of-2.\n");
   fprintf(stderr, "  --L3=<SIZE>:<ASSOC>:<BLOCKSIZE>:<#MHSR>:<HITTIME>\tConfigure L3 $. Derived # sets must be power-of-2. Block size must be power-of-2.\n");
   fprintf(stderr, "  --MEMLAT=<latency>\tConfigure a fixed miss penalty for a miss in the LLC.\n");
+//changes by Prateek Chandra
   // options for value prediction
   fprintf(stderr, "  --vp-enable=<0/1>\tEnable (1) or disable (0) value prediction.\n");
   fprintf(stderr, "  --vp-perf=<1>\tEnable perfect value prediction.\n");
@@ -88,6 +89,7 @@ static void help()
                               <VPQ_full_policy>If VPQ full and need entries for VP-eligible instructions in bundle: 0: stall bundle, 1: don’t allocate VPQ entries (gaps in training will affect confidence).");
 exit(1);
 }
+//changes end by Prateek Chandra
 
 /* execution start time */
 time_t start_time;

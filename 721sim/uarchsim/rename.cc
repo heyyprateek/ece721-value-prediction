@@ -156,6 +156,24 @@ void pipeline_t::rename2() {
 		}
       // FIX_ME #3 END
 
+		//changes by Abhishek Bajaj
+		if(VALUE_PRED_EN){
+   	   if(!PERFECT_VALUE_PRED){
+				if(!SVP_ORACLECONF){
+					if(PAY.buf[index].C_valid){
+						if(val_predictor->eligible_inst(PAY.buf,index))
+							val_predictor->predict(PAY.buf[index].pc,PAY.buf[index].predicted_value,PAY.buf[index].confidence,PAY.buf[index].pred_flag,PAY.buf[index].stall,PAY.buf[index].vpq_entry_flag,PAY.buf[index].vpq_entry_tail);
+						else
+							PAY.buf[index].eligible_inst=0;
+					}
+      			if(PAY.buf[index].checkpoint){
+						val_predictor->checkpoint(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
+					}
+				}
+			}
+		}
+		//changes end by Abhishek Bajaj
+		
       // FIX_ME #4
       // Get the instruction's branch mask.
       //

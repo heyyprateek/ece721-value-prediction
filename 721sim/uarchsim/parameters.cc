@@ -72,7 +72,7 @@ uint32_t FU_LAT[(unsigned int)NUMBER_FU_TYPES] = {1 /* BR     */ ,
 //                                                          0xff /*    MTF: 0000 1000 */
 //                                                         };
                                                          
-
+//changes by Prateek Chandra
 // VALUE PREDICTION
 uint64_t VALUE_PRED_EN = 0;
 uint64_t PERFECT_VALUE_PRED = 0;
@@ -89,7 +89,7 @@ uint64_t SVP_PREDINTALU = 0;
 uint64_t SVP_PREDFPALU = 0;
 uint64_t SVP_PREDLOAD = 0;
 uint64_t VPQ_FULL_POLICY = 0;
-
+//changes end by Prateek Chandra
 
 
 // L1 Data Cache.

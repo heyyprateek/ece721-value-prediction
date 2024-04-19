@@ -75,6 +75,12 @@ void pipeline_t::retire(size_t& instret) {
 
       if (!exception && !load_viol) {
 	 //
+	 	if(VALUE_PRED_EN){
+			if(!PERFECT_VALUE_PRED){
+				if(!SVP_ORACLECONF)
+				 	val_predictor->train_or_rep(PAY.buf[PAY.head].pc);
+			}
+		}
          // FIX_ME #17b
 	 // Commit the instruction at the head of the active list.
 	 //

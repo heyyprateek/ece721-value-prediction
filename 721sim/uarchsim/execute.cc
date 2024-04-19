@@ -263,7 +263,24 @@ void pipeline_t::load_replay() {
 			REN->write(PAY.buf[index].C_phys_reg,PAY.buf[index].C_value.dw);
          // FIX_ME #18a END
       }
-
+		bool prediction;
+		if(VALUE_PRED_EN){
+			if(!PERFECT_VALUE_PRED){
+				if(!SVP_ORACLECONF){
+			
+					if(PAY.buf[index].vpq_entry_flag){
+						val_predictor->vpq_update(PAY.buf[index].pc,PAY.buf[index].vpq_entry_tail,PAY.buf[index].C_value.dw);
+					}
+					if(PAY.buf[index].pred_flag){
+						prediction=val_predictor->check_prediction(PAY.buf[index].C_value.dw,PAY.buf[index].predicted_value,PAY.buf[index].confidence);
+						
+						if(!prediction){
+							REN->set_value_misprediction(PAY.buf[index].AL_index);
+						}
+					}
+				}
+			}
+		}
       // FIX_ME #18b
       // Set completed bit in Active List.
       //

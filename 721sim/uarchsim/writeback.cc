@@ -66,6 +66,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
 
 	    // FIX_ME #15a BEGIN
 				REN->resolve(PAY.buf[index].AL_index, PAY.buf[index].branch_ID,true);
+
 	    // FIX_ME #15a END
          }
          else if (PAY.buf[index].next_pc == PAY.buf[index].c_next_pc) {
@@ -89,6 +90,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
 	    // FIX_ME #15b BEGIN
 				REN->resolve(PAY.buf[index].AL_index, PAY.buf[index].branch_ID,true);
 				resolve(PAY.buf[index].branch_ID,true);
+
 	    // FIX_ME #15b END
          }
          else {
@@ -121,7 +123,15 @@ void pipeline_t::writeback(unsigned int lane_number) {
 
             // Restore the LQ/SQ.
             LSU.restore(PAY.buf[index].LQ_index, PAY.buf[index].LQ_phase, PAY.buf[index].SQ_index, PAY.buf[index].SQ_phase);
-
+				//Changes by Abhishek Bajaj
+	 			if(VALUE_PRED_EN){
+					if(!PERFECT_VALUE_PRED){
+						if(!SVP_ORACLECONF){
+							val_predictor->restore(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
+						}
+					}
+				}
+				//Changes end by Abhishek Bajaj
             // FIX_ME #15d
             // Squash instructions after the branch in program order, in all pipeline registers and the IQ.
             //
@@ -155,6 +165,28 @@ void pipeline_t::writeback(unsigned int lane_number) {
       // FIX_ME #16 BEGIN
       REN->set_complete(PAY.buf[index].AL_index);
       // FIX_ME #16 END
+
+
+		//VPQ update 
+		//Changes by Abhishek Bajaj
+		if(VALUE_PRED_EN){
+			if(!PERFECT_VALUE_PRED){
+				if(!SVP_ORACLECONF){
+					bool prediction;
+					if(PAY.buf[index].vpq_entry_flag){
+						val_predictor->vpq_update(PAY.buf[index].pc,PAY.buf[index].vpq_entry_tail,PAY.buf[index].C_value.dw);
+					}
+					if(PAY.buf[index].pred_flag){
+						prediction=val_predictor->check_prediction(PAY.buf[index].C_value.dw,PAY.buf[index].predicted_value,PAY.buf[index].confidence);
+						
+						if(!prediction){
+							REN->set_value_misprediction(PAY.buf[index].AL_index);
+						}
+					}
+				}
+			}
+		}
+		 //Changes end by Abhishek Bajaj
 
       //////////////////////////////////////////////////////////////////////////////////////////////////////////
       // Remove the instruction from the Execution Lane.

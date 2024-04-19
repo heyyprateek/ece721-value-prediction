@@ -44,6 +44,7 @@
 
 #include "alu_ops.h"
 
+#include "value_predictor.h"
 //////////////////////////////////////////////////////////////////////////////
 
 /* instruction flags */
@@ -76,6 +77,11 @@
 #define IS_AMO(flags)     ((flags) & (F_AMO))
 #define IS_CSR(flags)     ((flags) & (F_CSR))
 
+//changes by Abhishek Bajaj
+#define IS_INTALU(flags) ((flags)&(F_ICOMP)) //integer ALU instruction
+#define IS_FPALU(flags) ((flags)&(F_FCOMP)) //floating-point ALU instruction
+//changes end by Abhishek Bajaj
+//
 //////////////////////////////////////////////////////////////////////////////
 
 #define BIT_IS_ZERO(x,i)	(((x) & (((unsigned long long)1) << i)) == 0)
@@ -303,7 +309,9 @@ private:
 	unsigned int dispatch_width;	// rename, dispatch width
 	unsigned int issue_width;	// issue width
 	unsigned int retire_width;	// retire width
-
+	//chnages by Abhishek Bajaj
+	value_predictor *val_predictor;
+	//Changes end by Abhishek Bajaj
 	/////////////////////////////////////////////////////////////
 	// Fetch unit.
 	/////////////////////////////////////////////////////////////

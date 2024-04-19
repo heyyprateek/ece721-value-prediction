@@ -201,7 +201,16 @@ void payload::map_to_actual(pipeline_t* proc, unsigned int index) {
 		buf[index].db_index = DEBUG_INDEX_INVALID;
 	}
 }
-
+//Changes by Abhishek Bajaj
+//void payload::predict_value(pipeline_t *proc, unsigned int index){
+//   debug_index_t db_index;
+//   db_t *actual;
+//   db_index = (buf[index].db_index);
+//   actual = proc->get_pipe()->peek(db_index);
+//	predicted_value=actual->a_rdst;
+//}
+//changes end Abhishek Bajaj
+//
 // Perfect branch prediction, up to max_length instructions or the first indirect branch.
 void payload::predict(pipeline_t *proc, uint64_t pc, uint64_t max_length, uint64_t &cb_predictions, uint64_t &indirect_target) {
    uint64_t prev;
@@ -272,6 +281,8 @@ void payload::restore(unsigned int index) {
 	length = MOD((PAYLOAD_BUFFER_SIZE + tail - head), PAYLOAD_BUFFER_SIZE);
 }
 
+
+
 void payload::dump(pipeline_t* proc,unsigned int index,FILE* file)
 {
   proc->disasm(buf[index].inst,proc->cycle,buf[index].pc,buf[index].sequence,file);
@@ -320,6 +331,16 @@ void payload::dump(pipeline_t* proc,unsigned int index,FILE* file)
   ifprintf(logging_on,file,"\n");
 }
 
-unsigned int payload::get_size() {
-   return(PAYLOAD_BUFFER_SIZE);
-}
+//bool payload::eligible_inst(payload_t *pay, uint64_t index){
+//		if(IS_INTALU(pay[index]->flags))
+//			return(predINTALU);
+//		else if(IS_FPALU(pay[index]->flags))
+//			return(predFPALU);
+//		else if (IS_LOAD(pay[index]->flags)&& !IS_AMO(pay[index]->flags))
+//			return (predLOAD);
+//		else
+//			return (false);
+//	}
+//unsigned int payload::get_size() {
+//   return(PAYLOAD_BUFFER_SIZE);
+//}

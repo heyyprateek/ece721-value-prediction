@@ -165,7 +165,20 @@ typedef struct {
    ////////////////////////
    // Set by Rename Stage.
    ////////////////////////
-
+	
+//chnages by Abhishek Bajaj
+	uint64_t predicted_value;
+	bool confidence;
+	bool eligible_inst;
+//	bool eligible_predict;
+	bool pred_flag;
+	bool vpq_entry_flag;
+	uint64_t vpq_entry_tail;
+	uint64_t vpq_tail_chkpt;
+	bool vpq_t_phase_chkpt;
+	bool stall;
+//changes end by Abhishek Bajaj
+	
    // Physical registers.
    unsigned int A_phys_reg;     // If there exists a first source register (A),
                                 // this is the physical register specifier to
@@ -179,11 +192,7 @@ typedef struct {
    unsigned int D_phys_reg;     // If there exists a third ** SOURCE ** register (D),
                                 // this is the physical register specifier to
                                 // which it is renamed.
-   //Changes by Abhishek Bajaj
-   unsigned long int predicted_value;
-   //changes end Abhishek Bajaj
-
-
+  
    // Branch ID, for checkpointed branches only.
    unsigned int branch_ID;      // When a checkpoint is created for a branch,
                                 // this is the branch's ID (its bit position
@@ -275,13 +284,15 @@ public:
 	void rollback(unsigned int index);
 	unsigned int checkpoint();
 	void restore(unsigned int index);
-  void dump(pipeline_t* proc,unsigned int index, FILE* file=stderr);
+   void dump(pipeline_t* proc,unsigned int index, FILE* file=stderr);
+	//bool eligible_inst(payload_t *pay,uint64_t index);
 
 	// FIX_ME: get rid of predict() function.
 	// Perfect branch prediction, up to max_length instructions or the first indirect branch.
 	void predict(pipeline_t *proc, uint64_t pc, uint64_t max_length, uint64_t &cb_predictions, uint64_t &indirect_target);
 
 	unsigned int get_size();
+
 };
 
 #endif //PAYLOAD_H
