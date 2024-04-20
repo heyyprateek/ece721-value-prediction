@@ -204,10 +204,16 @@ void pipeline_t::dispatch() {
       // FIX_ME #9 BEGIN
 ////Changes by Abhishek Bajaj
 //
+/////////////////////old code////////////////////////////
+	  if(PAY.buf[index].C_valid){
+   	   	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
+				REN->clear_ready(PAY.buf[index].C_phys_reg);
+		}
+
       if(VALUE_PRED_EN){
    	   	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
    	   if(PERFECT_VALUE_PRED){
-				if(PAY.buf[index].C_valid && PAY.buf[index].good_instruction && !PAY.buf[index].branch){
+				if(PAY.buf[index].C_valid && PAY.buf[index].good_instruction && !PAY.buf[index].checkpoint){
 					REN->set_ready(PAY.buf[index].C_phys_reg);
 					
    		      actual = get_pipe()->peek(PAY.buf[index].db_index);
@@ -215,25 +221,24 @@ void pipeline_t::dispatch() {
 				}
 			}
 			else 
-			{
+			{	
 				if(SVP_ORACLECONF){
-   		      actual = get_pipe()->peek(PAY.buf[index].db_index);
-					if(actual->a_rdst[0].value==PAY.buf[index].predicted_value){
+							//printf("oracle_mode\n");
+					if(PAY.buf[index].C_valid && PAY.buf[index].eligible_inst && PAY.buf[index].good_instruction && PAY.buf[index].pred_flag){
+   		      	actual = get_pipe()->peek(PAY.buf[index].db_index);
+						if(actual->a_rdst[0].value==PAY.buf[index].predicted_value && PAY.buf[index].pred_flag==1){
+							//printf("right prediction happening");
+							REN->set_ready(PAY.buf[index].C_phys_reg);
+							REN->write(PAY.buf[index].C_phys_reg,PAY.buf[index].predicted_value);				
+						}
+					}
+				}
+				else{
+					if(PAY.buf[index].C_valid && PAY.buf[index].eligible_inst && PAY.buf[index].confidence && PAY.buf[index].pred_flag){
 						REN->set_ready(PAY.buf[index].C_phys_reg);
 						REN->write(PAY.buf[index].C_phys_reg,PAY.buf[index].predicted_value);
 					}
 				}
-				else{
-
-				}
-			}
-		}
-		else
-		{
-/////////////////////old code////////////////////////////
-   	   if(PAY.buf[index].C_valid){
-   	   	//printf("FIX_ME 9 clearing rdy reg number = %0d \n",PAY.buf[index].C_phys_reg);
-				REN->clear_ready(PAY.buf[index].C_phys_reg);
 			}
 		}
 /////changes end by Abhishek

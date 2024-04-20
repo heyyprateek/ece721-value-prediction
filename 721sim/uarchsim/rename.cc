@@ -50,7 +50,7 @@ void pipeline_t::rename1() {
 void pipeline_t::rename2() {
    unsigned int i;
    unsigned int index;
-   unsigned int bundle_dst, bundle_branch;
+   unsigned int bundle_dst, bundle_branch,bundle_vp;
 
    // Stall the rename2 sub-stage if either:
    // (1) There isn't a current rename bundle.
@@ -65,6 +65,7 @@ void pipeline_t::rename2() {
    // Third stall condition: There aren't enough rename resources for the current rename bundle.
    bundle_dst = 0;
    bundle_branch = 0;
+	bundle_vp=0;
    for (i = 0; i < dispatch_width; i++) {
       if (!RENAME2[i].valid)
          break;			// Not a valid instruction: Reached the end of the rename bundle so exit loop.
@@ -84,12 +85,27 @@ void pipeline_t::rename2() {
       // 3. The instruction's payload has all the information you need to count resource needs.
       //    There is a flag in the instruction's payload that *directly* tells you if this instruction needs a checkpoint.
       //    Another field indicates whether or not the instruction has a destination register.
+      //
+      //
+     // printf("\n\neligible inst = %0d index-%0d\n\n",PAY.buf[index].eligible_inst, index);
+		//assert(PAY.buf[index].eligible_inst==0);
+		if(VALUE_PRED_EN && !PERFECT_VALUE_PRED){
+			if(val_predictor->eligible_inst(PAY.buf,index))
+				PAY.buf[index].eligible_inst=1;
+			else
+				PAY.buf[index].eligible_inst=0;
+		}
+		//
 
       // FIX_ME #1 BEGIN
       if(PAY.buf[index].checkpoint)
 			bundle_branch++;
       if(PAY.buf[index].C_valid)
 			bundle_dst++;
+		if(VALUE_PRED_EN && !PERFECT_VALUE_PRED){
+			if(PAY.buf[index].eligible_inst && PAY.buf[index].C_valid)
+			bundle_vp++;
+		}
       // FIX_ME #1 END
    }
 
@@ -112,6 +128,11 @@ void pipeline_t::rename2() {
 		//printf("FIX_ME2");
 		return;
 	}
+	if(VALUE_PRED_EN && !PERFECT_VALUE_PRED && VPQ_FULL_POLICY==0){
+		if(!val_predictor->space_avail(bundle_vp))
+			return;
+	}
+		
    // FIX_ME #2 END
 
    //
@@ -155,20 +176,18 @@ void pipeline_t::rename2() {
 			PAY.buf[index].C_phys_reg=REN->rename_rdst(PAY.buf[index].C_log_reg);
 		}
       // FIX_ME #3 END
-
 		//changes by Abhishek Bajaj
-		if(VALUE_PRED_EN){
-   	   if(!PERFECT_VALUE_PRED){
-				if(!SVP_ORACLECONF){
-					if(PAY.buf[index].C_valid){
-						if(val_predictor->eligible_inst(PAY.buf,index))
-							val_predictor->predict(PAY.buf[index].pc,PAY.buf[index].predicted_value,PAY.buf[index].confidence,PAY.buf[index].pred_flag,PAY.buf[index].stall,PAY.buf[index].vpq_entry_flag,PAY.buf[index].vpq_entry_tail);
-						else
-							PAY.buf[index].eligible_inst=0;
-					}
-      			if(PAY.buf[index].checkpoint){
-						val_predictor->checkpoint(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
-					}
+	//	printf("pc=%lx \n",PAY.buf[index].pc);
+		if(VALUE_PRED_EN && !PERFECT_VALUE_PRED){
+			if(PAY.buf[index].C_valid && PAY.buf[index].eligible_inst){
+				val_predictor->predict(PAY.buf[index].pc,PAY.buf[index].predicted_value,PAY.buf[index].confidence,PAY.buf[index].pred_flag,PAY.buf[index].stall,PAY.buf[index].vpq_entry_flag,PAY.buf[index].vpq_entry_tail);
+				assert(PAY.buf[index].stall==0);
+			//		assert(val_predictor->VPQ_full_policy==0);
+			//		return;
+			//	}
+				if(PAY.buf[index].checkpoint){
+					assert(PAY.buf[index].vpq_entry_flag==0);	
+					val_predictor->checkpoint(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
 				}
 			}
 		}

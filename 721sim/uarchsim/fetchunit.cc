@@ -125,6 +125,14 @@ void fetchunit_t::transfer_fetch_bundle() {
       PAY->buf[index].branch_type = fetch_bundle[pos].branch_type;
       PAY->buf[index].branch_target = fetch_bundle[pos].branch_target;
       PAY->buf[index].fflags = 0; // fflags field is always cleaned for newly fetched instructions
+		
+		////initializing the value predictor variables
+		PAY->buf[index].confidence=0;
+		PAY->buf[index].eligible_inst=0;
+		PAY->buf[index].pred_flag=0;
+		PAY->buf[index].vpq_entry_flag=0;
+		PAY->buf[index].vpq_t_phase_chkpt=0;
+		PAY->buf[index].stall=0;
 
       // Clear the trap storage before the first time it is used.
       PAY->buf[index].trap.clear();

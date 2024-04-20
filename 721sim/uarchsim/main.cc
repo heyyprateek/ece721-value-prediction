@@ -185,8 +185,8 @@ static void set_perf_value_pred_flag(const char* config) {
 
 static void set_svp_flags(const char* config) {
    uint64_t vpq_size, svp_oracleconf, svp_index_bits, svp_tag_bits, svp_confmax, svp_confinc, svp_confdec, svp_replace_stride, svp_replace, svp_VPQ_full_policy;
-   bool svp_predINTALU, svp_predFPALU, svp_predLOAD;
-   if (sscanf(config, "%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%d,%d,%d,%lu", &vpq_size, &svp_oracleconf, &svp_index_bits, &svp_tag_bits, &svp_confmax, &svp_confinc, &svp_confdec, &svp_replace_stride, &svp_replace, &svp_predINTALU, &svp_predFPALU, &svp_predLOAD, &svp_VPQ_full_policy) != 13) {
+   uint64_t svp_predINTALU, svp_predFPALU, svp_predLOAD;
+   if (sscanf(config, "%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu", &vpq_size, &svp_oracleconf, &svp_index_bits, &svp_tag_bits, &svp_confmax, &svp_confinc, &svp_confdec, &svp_replace_stride, &svp_replace, &svp_predINTALU, &svp_predFPALU, &svp_predLOAD, &svp_VPQ_full_policy) != 13) {
       fprintf(stderr, "Incorrect usage of --svp=<VPQsize>,<oracleconf>,<# index bits>,<# tag bits>,<confmax>,<confinc>,<confdec>,<replace_stride>,<replace>,<predINTALU>,<predFPALU>,<predLOAD>,<VPQ_full_policy>\n");
       fprintf(stderr, "...where <VPQsize> is the number of VPQ entries, \n \
                        <oracleconf> is 0 for real confidence and 1 for oracle confidence, \n \

@@ -124,12 +124,11 @@ void pipeline_t::writeback(unsigned int lane_number) {
             // Restore the LQ/SQ.
             LSU.restore(PAY.buf[index].LQ_index, PAY.buf[index].LQ_phase, PAY.buf[index].SQ_index, PAY.buf[index].SQ_phase);
 				//Changes by Abhishek Bajaj
-	 			if(VALUE_PRED_EN){
-					if(!PERFECT_VALUE_PRED){
-						if(!SVP_ORACLECONF){
-							val_predictor->restore(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
-						}
-					}
+				//restoring
+	 			if(VALUE_PRED_EN && !PERFECT_VALUE_PRED){
+					assert(PAY.buf[index].checkpoint==1);
+					val_predictor->rollback(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
+					assert(val_predictor->vpq.tail==PAY.buf[index].vpq_tail_chkpt);
 				}
 				//Changes end by Abhishek Bajaj
             // FIX_ME #15d
@@ -171,14 +170,16 @@ void pipeline_t::writeback(unsigned int lane_number) {
 		//Changes by Abhishek Bajaj
 		if(VALUE_PRED_EN){
 			if(!PERFECT_VALUE_PRED){
-				if(!SVP_ORACLECONF){
-					bool prediction;
-					if(PAY.buf[index].vpq_entry_flag){
+				bool prediction;
+				if(PAY.buf[index].vpq_entry_flag){
+						//printf("updating vpq\n");
+					   assert(PAY.buf[index].checkpoint==0);
+					   assert(PAY.buf[index].eligible_inst==1);
 						val_predictor->vpq_update(PAY.buf[index].pc,PAY.buf[index].vpq_entry_tail,PAY.buf[index].C_value.dw);
-					}
+				}
+				if(!SVP_ORACLECONF){
 					if(PAY.buf[index].pred_flag){
 						prediction=val_predictor->check_prediction(PAY.buf[index].C_value.dw,PAY.buf[index].predicted_value,PAY.buf[index].confidence);
-						
 						if(!prediction){
 							REN->set_value_misprediction(PAY.buf[index].AL_index);
 						}

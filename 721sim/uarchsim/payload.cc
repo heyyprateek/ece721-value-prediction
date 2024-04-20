@@ -79,6 +79,15 @@ void trap_storage_t::clear() {
 }
 
 payload::payload(unsigned int total_inflight_instr) {
+//	uint64_t predicted_value;
+//	confidence=0;
+//	eligible_inst=0;
+//	pred_flag=0;
+//	vpq_entry_flag=0;
+//	vpq_entry_tail=0;
+//	vpq_tail_chkpt=0;
+//	vpq_t_phase_chkpt=0;
+//	stall=0;
 	assert(total_inflight_instr > 0);
 	unsigned int temp = 2*total_inflight_instr; // Need two PAY entries for each in-flight instruction to support splitting.
 	if (!IsPow2(temp))

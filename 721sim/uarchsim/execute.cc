@@ -266,11 +266,10 @@ void pipeline_t::load_replay() {
 		bool prediction;
 		if(VALUE_PRED_EN){
 			if(!PERFECT_VALUE_PRED){
-				if(!SVP_ORACLECONF){
-			
-					if(PAY.buf[index].vpq_entry_flag){
+				if(PAY.buf[index].vpq_entry_flag){
 						val_predictor->vpq_update(PAY.buf[index].pc,PAY.buf[index].vpq_entry_tail,PAY.buf[index].C_value.dw);
-					}
+				}
+				if(!SVP_ORACLECONF){
 					if(PAY.buf[index].pred_flag){
 						prediction=val_predictor->check_prediction(PAY.buf[index].C_value.dw,PAY.buf[index].predicted_value,PAY.buf[index].confidence);
 						

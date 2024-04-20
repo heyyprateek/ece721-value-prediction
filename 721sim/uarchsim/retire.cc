@@ -77,7 +77,18 @@ void pipeline_t::retire(size_t& instret) {
 	 //
 	 	if(VALUE_PRED_EN){
 			if(!PERFECT_VALUE_PRED){
-				if(!SVP_ORACLECONF)
+	//			if(!SVP_ORACLECONF)
+	//			int vpq_inst,svp_inst;
+	//			vpq_inst=svp_inst=0;
+	//			if(val_predictor->vpq.t_phase==val_predictor->vpq.h_phase)
+	//				vpq_inst=val_predictor->vpq.tail-val_predictor->vpq.head;
+	//			else
+	//				vpq_inst=VPQ_SIZE-val_predictor->vpq.head+val_predictor->vpq.tail;
+	//			for(int i=0;i<val_predictor->val_predictor.size();i++){
+	//				svp_inst+=val_predictor->val_predictor[i].instance;
+	//			}
+	//			assert(svp_inst==vpq_inst);
+				if(PAY.buf[PAY.head].vpq_entry_flag)
 				 	val_predictor->train_or_rep(PAY.buf[PAY.head].pc);
 			}
 		}

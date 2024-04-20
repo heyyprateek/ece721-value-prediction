@@ -170,7 +170,6 @@ typedef struct {
 	uint64_t predicted_value;
 	bool confidence;
 	bool eligible_inst;
-//	bool eligible_predict;
 	bool pred_flag;
 	bool vpq_entry_flag;
 	uint64_t vpq_entry_tail;

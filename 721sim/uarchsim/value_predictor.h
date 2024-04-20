@@ -14,7 +14,7 @@ public:
 	typedef struct SVP{
 		uint64_t tag;
 		uint64_t conf;
-		int64_t retired_value;
+		uint64_t retired_value;
 		int64_t stride;
 		uint64_t instance;
 	};
@@ -41,6 +41,7 @@ public:
 
 	bool check_prediction(uint64_t actual_val, uint64_t predicted_val, bool confidence);
 
+	bool space_avail(unsigned int bundle_vp);
 	bool train_or_rep(uint64_t pc);
 
 	void squash();
@@ -48,6 +49,7 @@ public:
 	bool eligible_inst(payload_t *pay,uint64_t index);
 //Input args
 	uint64_t VPQsize;
+	bool oracleconf;
    uint64_t index_bits; // # SVP entries is 2**(# index bits)
 	uint64_t tag_bits; // 0: no tag, 62-(# index bits): full tag, or somewhere between for partial tag
  
@@ -59,7 +61,7 @@ public:
 	bool predINTALU; // 1: predict integer ALU instructions with dest. reg., 0: don’t predict this instruction class
 	bool predFPALU; // 1: predict flt.pt. ALU instructions with dest. reg., 0: don’t predict this instruction class
 	bool predLOAD; // 1: predict load instructions with dest. reg., 0: don’t predict this instruction class
-	uint64_t VPQ_full_policy;// If VPQ full and need entries for VP-eligible
+	bool VPQ_full_policy;// If VPQ full and need entries for VP-eligible
 
 
 
@@ -92,7 +94,7 @@ public:
 	//////////////////////////////////////////
 	// Functions related to Rename Stage.   //
 	//////////////////////////////////////////
-	bool predict(uint64_t , uint64_t&, bool&, bool , bool&, bool&, uint64_t&);
-
+	void predict(uint64_t , uint64_t&, bool&, bool , bool&, bool&, uint64_t&);
+	void debug_print();
 };
 #endif
