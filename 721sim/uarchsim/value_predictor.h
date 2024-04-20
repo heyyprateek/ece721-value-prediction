@@ -42,7 +42,7 @@ public:
 	bool check_prediction(uint64_t actual_val, uint64_t predicted_val, bool confidence);
 
 	bool space_avail(unsigned int bundle_vp);
-	bool train_or_rep(uint64_t pc);
+	void train_or_rep(uint64_t pc);
 
 	void squash();
 	void rollback(uint64_t tail_ptr_chkpt, uint64_t t_phase);
@@ -94,7 +94,7 @@ public:
 	//////////////////////////////////////////
 	// Functions related to Rename Stage.   //
 	//////////////////////////////////////////
-	void predict(uint64_t , uint64_t&, bool&, bool , bool&, bool&, uint64_t&);
+	void predict(uint64_t , uint64_t&, bool&, bool& , bool&, bool&, uint64_t&);
 	void debug_print();
 };
 #endif

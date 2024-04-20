@@ -3,7 +3,7 @@
 
 void pipeline_t::squash_complete(reg_t jump_PC) {
 	unsigned int i, j;
-
+	val_predictor->squash();
 	//////////////////////////
 	// Fetch Stage
 	//////////////////////////

@@ -122,7 +122,7 @@
 		}
 	}
 
-	bool value_predictor::train_or_rep(uint64_t pc){
+	void value_predictor::train_or_rep(uint64_t pc){
 		uint64_t ip_tag;
 		int64_t new_stride;
 		uint64_t vpq_val;
@@ -207,7 +207,7 @@
 		vpq.t_phase=vpq_t_phase;
 	}
 	
-	void value_predictor::predict(uint64_t pc, uint64_t &prediction, bool &confidence, bool pred_flag, bool &stall,bool &vpq_entry_flag, uint64_t &vpq_tail_ptr){
+	void value_predictor::predict(uint64_t pc, uint64_t &prediction, bool &confidence, bool &pred_flag, bool &stall,bool &vpq_entry_flag, uint64_t &vpq_tail_ptr){
 	//	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>1111>>>>>############vpq.tail value =%ld \n",vpq.tail);
 		pc=pc>>2;
 	//	uint64_t	prediction;
