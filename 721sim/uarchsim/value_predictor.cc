@@ -376,7 +376,7 @@ unsigned int payload::get_size() {
 		printf("      %-14s : %3llu bits  // num_index_bits\n", "PC_index", index_bits);
 		printf("      %-14s : %3d bits  // RISCV64 integer size.\n", "value", int_64_size);
 		printf("      -------------------------\n");
-		printf("	  %-14s : %llud bits/VPQ entry\n", "bits/VPQ entry", vpq_bits);
+		printf("	  %-14s : %llu bits/VPQ entry\n", "bits/VPQ entry", vpq_bits);
 		uint64_t total_svp_cost = (1 << index_bits) * svp_bits;
 		uint64_t total_vpq_cost = VPQsize * vpq_bits;
 		// Total storage cost
