@@ -36,9 +36,14 @@
 		predLOAD=SVP_PREDLOAD;//1;
 		VPQ_full_policy=VPQ_FULL_POLICY;//1;
 		oracleconf=SVP_ORACLECONF;
+		confdec=SVP_CONFDEC;
 		uint64_t size =pow(2,index_bits);
 		val_predictor.resize(size);
+		for(int i=0;i<size;i++)
+			val_predictor[size].tag=0;
+
 		vpq.vpq_data.resize(VPQsize);
+		
 
 		//printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>0000>>>>>############vpq.tail value =%ld, vpq size=%ld, svp size=%ld\n",vpq.tail,vpq.vpq_data.size(), val_predictor.size());
 //		print("<<<<<<<<<< exiting is value_predictor constructor \n");
@@ -160,8 +165,10 @@
 					}
 				if(confdec==0)
 					val_predictor[pc_index].conf=0;
-				else {if(val_predictor[pc_index].conf<confdec)
-					val_predictor[pc_index].conf=0;
+				else 
+				{	
+					if(val_predictor[pc_index].conf<confdec)
+						val_predictor[pc_index].conf=0;
 					else val_predictor[pc_index].conf-=confdec;
 				}
 			}
@@ -238,7 +245,7 @@
 		uint64_t pc_index=pc;
 		index_calc(pc_index);
 		
-		//printf(">>>>>>>>>>>>>>>>>>>>>>before entry>>>>>>############vpq.tail value =%ld, ip_tag%lx pc_index%lx pc-%lx\n",vpq.tail, ip_tag,pc_index,pc<<2);
+		printf(">>>>>>>>>>>>>>>>>>>>>>before entry>>>>>>############vpq.tail value =%ld, >>>>>> ip_tag%lx <<<<<<< pc_index%lx pc-%lx\n",vpq.tail, ip_tag,pc_index,pc<<2);
 		if(tag_bits>0){
 			hit=(ip_tag==val_predictor[pc_index].tag);
 		}
