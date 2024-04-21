@@ -8,6 +8,8 @@
 #include <payload.h>
 //#include <pipeline.h>
 class value_predictor {
+private:
+	int64_t stride_bits;
 public:
 
 //SVP
@@ -47,6 +49,9 @@ public:
 	void squash();
 	void rollback(uint64_t tail_ptr_chkpt, uint64_t t_phase);
 	bool eligible_inst(payload_t *pay,uint64_t index);
+	// stats printer
+	void print_vpmeas();
+	void print_cost_accounting();
 //Input args
 	uint64_t VPQsize;
 	bool oracleconf;
