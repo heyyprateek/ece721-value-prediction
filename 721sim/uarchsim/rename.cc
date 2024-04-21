@@ -128,7 +128,7 @@ void pipeline_t::rename2() {
 		//printf("FIX_ME2");
 		return;
 	}
-	if(VALUE_PRED_EN && !PERFECT_VALUE_PRED && VPQ_FULL_POLICY==0){
+	if(VALUE_PRED_EN && !PERFECT_VALUE_PRED && (VPQ_FULL_POLICY==0)){
 		if(!val_predictor->space_avail(bundle_vp))
 			return;
 	}
@@ -185,11 +185,13 @@ void pipeline_t::rename2() {
 			//		assert(val_predictor->VPQ_full_policy==0);
 			//		return;
 			//	}
-				if(PAY.buf[index].checkpoint){
-					assert(PAY.buf[index].vpq_entry_flag==0);	
-					val_predictor->checkpoint(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
+//				if(PAY.buf[index].checkpoint){
+//					assert(PAY.buf[index].vpq_entry_flag==0);	
+//					val_predictor->checkpoint(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
 				}
-			}
+			if(PAY.buf[index].checkpoint){
+				assert(PAY.buf[index].vpq_entry_flag==0);	
+				val_predictor->checkpoint(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);			}
 		}
 		//changes end by Abhishek Bajaj
 		

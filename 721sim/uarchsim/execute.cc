@@ -270,7 +270,8 @@ void pipeline_t::load_replay() {
 						val_predictor->vpq_update(PAY.buf[index].pc,PAY.buf[index].vpq_entry_tail,PAY.buf[index].C_value.dw);
 				}
 				if(!SVP_ORACLECONF){
-					if(PAY.buf[index].pred_flag){
+					if(PAY.buf[index].pred_flag && PAY.buf[index].confidence){
+						assert(PAY.buf[index].vpq_entry_flag==1);
 						prediction=val_predictor->check_prediction(PAY.buf[index].C_value.dw,PAY.buf[index].predicted_value,PAY.buf[index].confidence);
 						
 						if(!prediction){

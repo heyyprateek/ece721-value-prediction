@@ -3,6 +3,7 @@
 
 void pipeline_t::squash_complete(reg_t jump_PC) {
 	unsigned int i, j;
+	if(VALUE_PRED_EN && (!PERFECT_VALUE_PRED))
 	val_predictor->squash();
 	//////////////////////////
 	// Fetch Stage

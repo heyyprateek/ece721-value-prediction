@@ -54,6 +54,8 @@
 	void value_predictor::squash(){
 		uint64_t ip_tag;
 		uint64_t pc_index;
+		int head=vpq.head;
+		int h_phase=vpq.h_phase;
 		while(!(vpq.tail==vpq.head &&vpq.t_phase==vpq.h_phase)){
 			ip_tag=vpq.vpq_data[vpq.head].tag;
 			pc_index=vpq.vpq_data[vpq.head].index;
@@ -68,6 +70,13 @@
 				vpq.head++;
 			}
 		}
+		vpq.head=head;
+		vpq.tail=head;
+		vpq.h_phase=h_phase;
+		vpq.t_phase=h_phase;
+	//	for(int i=0;i<val_predictor.size();i++){
+	//		assert(val_predictor[i].instance==0);
+	//	}
 	}
 	
 	void value_predictor::rollback(uint64_t tail_ptr_chkpt, uint64_t t_phase){
@@ -137,17 +146,24 @@
 
 //SVP hit
 		if(ip_tag==val_predictor[pc_index].tag){
+//stride match
 			if(val_predictor[pc_index].stride==new_stride){
 				//printf("stride match for stride=%ld , pc_index=%ld, pc_tag%ld\n",new_stride,pc_index,ip_tag);
 				val_predictor[pc_index].conf+=confinc;
 				if(val_predictor[pc_index].conf>confmax)
 					val_predictor[pc_index].conf=confmax;
 			}
+//stride mismatch
 			else{
 				if(val_predictor[pc_index].conf<=replace_stride){
 						val_predictor[pc_index].stride=new_stride;
 					}
-				val_predictor[pc_index].conf=0;
+				if(confdec==0)
+					val_predictor[pc_index].conf=0;
+				else {if(val_predictor[pc_index].conf<confdec)
+					val_predictor[pc_index].conf=0;
+					else val_predictor[pc_index].conf-=confdec;
+				}
 			}
 			val_predictor[pc_index].retired_value=vpq.vpq_data[vpq.head].value;
 			val_predictor[pc_index].instance-=1;
@@ -243,6 +259,8 @@
 				pred_flag=1;
 				val_predictor[pc_index].instance++;
 				prediction=val_predictor[pc_index].retired_value+val_predictor[pc_index].instance*val_predictor[pc_index].stride;
+				if(val_predictor[pc_index].conf==confmax)
+					confidence=1;
 			}
 			else if (hit==0){
 			//	vpmeas_miss++;
@@ -285,7 +303,7 @@ bool value_predictor::eligible_inst(payload_t *pay, uint64_t index){
 		//printf("debug prints >>>>>>>>>>");
 		printf("svp-  tag-   conf  retired_val  stride  instance  \n");
 		for(int i=0;i<val_predictor.size();i++){
-			printf("\t%10d\t%8lx\t%6ld\t%13ld\t%6ld\t%8ld \n",i,val_predictor[i].tag,val_predictor[i].conf,val_predictor[i].retired_value,val_predictor[i].stride,val_predictor[i].instance);
+			printf("\t%10d\t%8lx\t%6llu\t%13llu\t%6ld\t%8ld \n",i,val_predictor[i].tag,val_predictor[i].conf,val_predictor[i].retired_value,val_predictor[i].stride,val_predictor[i].instance);
 		}
 		uint64_t head=vpq.head;
 		uint64_t tail=vpq.tail;

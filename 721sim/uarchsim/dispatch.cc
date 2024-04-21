@@ -234,7 +234,9 @@ void pipeline_t::dispatch() {
 					}
 				}
 				else{
+	//					PAY.buf[index].confidence=0;
 					if(PAY.buf[index].C_valid && PAY.buf[index].eligible_inst && PAY.buf[index].confidence && PAY.buf[index].pred_flag){
+	//					printf("injecting value");
 						REN->set_ready(PAY.buf[index].C_phys_reg);
 						REN->write(PAY.buf[index].C_phys_reg,PAY.buf[index].predicted_value);
 					}
