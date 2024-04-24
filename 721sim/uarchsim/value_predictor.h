@@ -10,6 +10,8 @@
 class value_predictor {
 private:
 	int64_t stride_bits;
+   FILE* stats_log;
+   FILE* phase_log;
 public:
 
 //SVP
@@ -50,6 +52,8 @@ public:
 	void rollback(uint64_t tail_ptr_chkpt, uint64_t t_phase);
 	bool eligible_inst(payload_t *pay,uint64_t index);
 	// stats printer
+	void set_cntrs(uint64_t actual_val, uint64_t predicted_val, bool confidence, payload_t *PAY, uint64_t index);
+	void set_log_files(FILE* _stats_log,FILE* _phase_log);
 	void print_vpmeas();
 	void print_cost_accounting();
 //Input args

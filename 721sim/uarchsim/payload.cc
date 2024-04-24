@@ -88,6 +88,8 @@ payload::payload(unsigned int total_inflight_instr) {
 //	vpq_tail_chkpt=0;
 //	vpq_t_phase_chkpt=0;
 //	stall=0;
+	 perf_el=0;
+	 perf_inel=0;
 	assert(total_inflight_instr > 0);
 	unsigned int temp = 2*total_inflight_instr; // Need two PAY entries for each in-flight instruction to support splitting.
 	if (!IsPow2(temp))
@@ -210,7 +212,7 @@ void payload::map_to_actual(pipeline_t* proc, unsigned int index) {
 		buf[index].db_index = DEBUG_INDEX_INVALID;
 	}
 }
-//Changes by Abhishek Bajaj
+//Changes by Abhishek/Prateek
 //void payload::predict_value(pipeline_t *proc, unsigned int index){
 //   debug_index_t db_index;
 //   db_t *actual;
@@ -218,7 +220,7 @@ void payload::map_to_actual(pipeline_t* proc, unsigned int index) {
 //   actual = proc->get_pipe()->peek(db_index);
 //	predicted_value=actual->a_rdst;
 //}
-//changes end Abhishek Bajaj
+//changes end Abhishek/Prateek
 //
 // Perfect branch prediction, up to max_length instructions or the first indirect branch.
 void payload::predict(pipeline_t *proc, uint64_t pc, uint64_t max_length, uint64_t &cb_predictions, uint64_t &indirect_target) {

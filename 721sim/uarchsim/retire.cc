@@ -76,7 +76,17 @@ void pipeline_t::retire(size_t& instret) {
       if (!exception && !load_viol) {
 	 //
 	 	if(VALUE_PRED_EN){
+			if(PERFECT_VALUE_PRED){
+				if(PAY.buf[PAY.head].C_valid && PAY.buf[PAY.head].good_instruction && !PAY.buf[PAY.head].checkpoint){
+					PAY.perf_el++;
+				}
+				else
+					PAY.perf_inel++;
+				
+			}
 			if(!PERFECT_VALUE_PRED){
+				val_predictor->set_cntrs(PAY.buf[PAY.head].C_value.dw,PAY.buf[PAY.head].predicted_value,PAY.buf[PAY.head].confidence,PAY.buf, PAY.head);
+				
 	//			if(!SVP_ORACLECONF)
 	//			int vpq_inst,svp_inst;
 	//			vpq_inst=svp_inst=0;

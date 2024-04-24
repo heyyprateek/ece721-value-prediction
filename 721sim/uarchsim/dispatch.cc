@@ -202,7 +202,7 @@ void pipeline_t::dispatch() {
       // 2. If the instruction has a destination register, then clear its ready bit; otherwise do nothing.
 
       // FIX_ME #9 BEGIN
-////Changes by Abhishek Bajaj
+////Changes by Abhishek/Prateek
 //
 /////////////////////old code////////////////////////////
 	  if(PAY.buf[index].C_valid){
@@ -218,6 +218,7 @@ void pipeline_t::dispatch() {
 					
    		      actual = get_pipe()->peek(PAY.buf[index].db_index);
 					REN->write(PAY.buf[index].C_phys_reg,actual->a_rdst[0].value);
+					PAY.buf[index].pred_flag=1;
 				}
 			}
 			else 
@@ -243,7 +244,7 @@ void pipeline_t::dispatch() {
 				}
 			}
 		}
-/////changes end by Abhishek
+/////changes end by Abhishek/Prateek
 
  
 //		// FIX_ME #9 END

@@ -123,14 +123,14 @@ void pipeline_t::writeback(unsigned int lane_number) {
 
             // Restore the LQ/SQ.
             LSU.restore(PAY.buf[index].LQ_index, PAY.buf[index].LQ_phase, PAY.buf[index].SQ_index, PAY.buf[index].SQ_phase);
-				//Changes by Abhishek Bajaj
+				//Changes by Abhishek/Prateek
 				//restoring
 	 			if(VALUE_PRED_EN && !PERFECT_VALUE_PRED){
 					assert(PAY.buf[index].checkpoint==1);
 					val_predictor->rollback(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);
 					assert(val_predictor->vpq.tail==PAY.buf[index].vpq_tail_chkpt);
 				}
-				//Changes end by Abhishek Bajaj
+				//Changes end by Abhishek/Prateek
             // FIX_ME #15d
             // Squash instructions after the branch in program order, in all pipeline registers and the IQ.
             //
@@ -167,7 +167,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
 
 
 		//VPQ update 
-		//Changes by Abhishek Bajaj
+		//Changes by Abhishek/Prateek
 		if(VALUE_PRED_EN){
 			if(!PERFECT_VALUE_PRED){
 				bool prediction;
@@ -187,7 +187,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
 				}
 			}
 		}
-		 //Changes end by Abhishek Bajaj
+		 //Changes end by Abhishek/Prateek
 
       //////////////////////////////////////////////////////////////////////////////////////////////////////////
       // Remove the instruction from the Execution Lane.

@@ -233,13 +233,14 @@ pipeline_t::pipeline_t(
   ////////////////////////////////////////////////////////////
   REN = new renamer(NXPR+NFPR, prf_size, num_chkpts, rob_size);
 
-//Changes by Abhishek Bajaj
+//Changes by Abhishek/Prateek
 	if(VALUE_PRED_EN){
 		if(!PERFECT_VALUE_PRED){
   			val_predictor = new value_predictor;
+  			val_predictor->set_log_files(stats_log, phase_log);
 		}
 	}
-//Changes end by Abhishek Bajaj
+//Changes end by Abhishek/Prateek
 
   /////////////////////////////////////////////////////////////
   // Pipeline register between the Rename and Dispatch Stages.
@@ -380,8 +381,14 @@ pipeline_t::pipeline_t(
   fprintf(stats_log, "IBP_PC_LENGTH = %d\n", IBP_PC_LENGTH);
   fprintf(stats_log, "IBP_BHR_LENGTH = %d\n", IBP_BHR_LENGTH);
   fprintf(stats_log, "ENABLE_TRACE_CACHE = %d\n", (ENABLE_TRACE_CACHE ? 1 : 0));
-
-  fprintf(stats_log, "\n=== INTERNAL SIMULATOR STRUCTURES ===============================================\n\n");
+//cost accounting
+  if(VALUE_PRED_EN &&!PERFECT_VALUE_PRED)
+  	 val_predictor->print_cost_accounting();
+  else if(VALUE_PRED_EN && PERFECT_VALUE_PRED){
+		fprintf(stats_log,"COST ACCOUNTING\n");
+		fprintf(stats_log,"Impossible.\n");
+  }
+ fprintf(stats_log, "\n=== INTERNAL SIMULATOR STRUCTURES ===============================================\n\n");
 
   fprintf(stats_log, "PAYLOAD_BUFFER_SIZE = %d\n", PAY.get_size());
 
@@ -429,7 +436,23 @@ pipeline_t::~pipeline_t()
 
   FetchUnit->output(stats->get_counter("commit_count"), stats->get_counter("cycle_count"), stats_log);
   LSU.dump_stats(stats_log);
-
+//vpu meas
+  if(VALUE_PRED_EN &&!PERFECT_VALUE_PRED)
+    val_predictor->print_vpmeas();
+////PERFECT VALUE PREDICTION DATA
+  if(VALUE_PRED_EN &&PERFECT_VALUE_PRED){
+		fprintf(stats_log,"VPU MEASUREMENTS-----------------------------------\n");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible", PAY.perf_inel , 27.20, "Not eligible for value prediction.");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible_type", PAY.perf_inel, 27.20, "Not eligible because of type.");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible_drop", 0, 0.00, "VPU dropped otherwise-eligible instr. (neither predict nor train)\n                                                 // due to unavailable resource (e.g., VPQ_full_policy=1 and no free VPQ entry).");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_eligible", PAY.perf_el, 72.80, "Eligible for value prediction.");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_miss", 0, 0.00, "VPU was unable to generate a value prediction (e.g., SVP miss).");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_conf_corr", PAY.perf_el , 43.71, "VPU generated a confident and correct value prediction.");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_conf_incorr", 0, 0.12, "VPU generated a confident and incorrect value prediction. (MISPREDICTION)");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_unconf_corr", 0, 5.82, "VPU generated an unconfident and correct value prediction. (LOST OPPORTUNITY)");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_unconf_incorr", 0, 23.15, "VPU generated an unconfident and incorrect value prediction.");
+	}
+////PERFECT VALUE PREDICTION DATA
   #ifdef RISCV_MICRO_DEBUG
     fclose(this->fetch_log    );
     fclose(this->decode_log   );

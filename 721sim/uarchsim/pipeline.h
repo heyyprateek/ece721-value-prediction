@@ -77,10 +77,10 @@
 #define IS_AMO(flags)     ((flags) & (F_AMO))
 #define IS_CSR(flags)     ((flags) & (F_CSR))
 
-//changes by Abhishek Bajaj
+//changes by Abhishek/Prateek
 #define IS_INTALU(flags) ((flags)&(F_ICOMP)) //integer ALU instruction
 #define IS_FPALU(flags) ((flags)&(F_FCOMP)) //floating-point ALU instruction
-//changes end by Abhishek Bajaj
+//changes end by Abhishek/Prateek
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -309,9 +309,9 @@ private:
 	unsigned int dispatch_width;	// rename, dispatch width
 	unsigned int issue_width;	// issue width
 	unsigned int retire_width;	// retire width
-	//chnages by Abhishek Bajaj
+	//chnages by Abhishek/Prateek
 	value_predictor *val_predictor;
-	//Changes end by Abhishek Bajaj
+	//Changes end by Abhishek/Prateek
 	/////////////////////////////////////////////////////////////
 	// Fetch unit.
 	/////////////////////////////////////////////////////////////

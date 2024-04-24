@@ -166,7 +166,7 @@ typedef struct {
    // Set by Rename Stage.
    ////////////////////////
 	
-//chnages by Abhishek Bajaj
+//chnages by Abhishek/Prateek
 	uint64_t predicted_value;
 	bool confidence;
 	bool eligible_inst;
@@ -176,7 +176,7 @@ typedef struct {
 	uint64_t vpq_tail_chkpt;
 	bool vpq_t_phase_chkpt;
 	bool stall;
-//changes end by Abhishek Bajaj
+//changes end by Abhishek/Prateek
 	
    // Physical registers.
    unsigned int A_phys_reg;     // If there exists a first source register (A),
@@ -273,7 +273,8 @@ public:
 	unsigned int head;
 	unsigned int tail;
 	int          length;
-
+	uint64_t perf_el;
+	uint64_t perf_inel;
 	payload(unsigned int total_inflight_instr);		// constructor
 	unsigned int push();
 	void pop();

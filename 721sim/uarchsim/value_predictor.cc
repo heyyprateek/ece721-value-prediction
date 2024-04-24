@@ -39,6 +39,19 @@
 		confdec=SVP_CONFDEC;
 		uint64_t size =pow(2,index_bits);
 		val_predictor.resize(size);
+		
+
+		vpmeas_ineligible=0;       // Not eligible for value prediction.
+		vpmeas_ineligible_type=0; // Not eligible because of type.
+		vpmeas_ineligible_drop=0; // VPU dropped otherwise-eligible instr. (neither predict nor train)
+		
+		vpmeas_eligible=0;        // Eligible for value prediction.
+		vpmeas_miss=0;            // VPU was unable to generate a value prediction (e.g., SVP miss).
+		vpmeas_conf_corr=0;       // VPU generated a confident and correct value prediction.
+		vpmeas_conf_incorr=0;     // VPU generated a confident and incorrect value prediction. (MISPREDICTION)
+		vpmeas_unconf_corr=0;     // VPU generated an unconfident and correct value prediction. (LOST OPPORTUNITY)
+		vpmeas_unconf_incorr=0;   // VPU generated an unconfident and incorrect value prediction.;
+
 		for(int i=0;i<size;i++)
 			val_predictor[size].tag=0;
 
@@ -117,24 +130,67 @@
 
 	bool value_predictor::check_prediction(uint64_t actual_val, uint64_t predicted_val, bool confidence){
 		if(actual_val==predicted_val){
-			if(confidence){
-				vpmeas_conf_corr++;       // VPU generated a confident and correct value prediction.
-			}
-			else{
-				vpmeas_unconf_corr++;     // VPU generated an unconfident and correct value prediction. (LOST OPPORTUNITY)
-			}
 			return true;
 		}
 		else{
-			if (confidence){
-				vpmeas_conf_incorr++;     // VPU generated a confident and incorrect value prediction. (MISPREDICTION)
-			}
-			else{
-				vpmeas_unconf_incorr++; 				
-			}
 			return false;
 		}
 	}
+	void value_predictor::set_cntrs(uint64_t actual_val, uint64_t predicted_val, bool confidence, payload_t *PAY, uint64_t index){
+	//	if(PERFECT_VALUE_PRED){
+	//			if( PAY[index].pred_flag){
+	//			vpmeas_eligible++;
+	//			vpmeas_conf_corr++;
+	//		}
+	//		else{
+	//		 vpmeas_ineligible_type++;
+	//		 vpmeas_ineligible++;
+	//		}
+	//	}
+	//	else if(PERFECT_VALUE_PRED)
+			
+		if(!(PAY[index].eligible_inst && PAY[index].C_valid)){
+			vpmeas_ineligible_type++;
+			vpmeas_ineligible++;
+		}
+		if((PAY[index].eligible_inst && PAY[index].C_valid) && (VPQ_full_policy==1) && !PAY[index].vpq_entry_flag){
+			vpmeas_ineligible_drop++;
+			vpmeas_ineligible++;
+		}
+		if(PAY[index].vpq_entry_flag){
+			if(PAY[index].pred_flag){
+				if(actual_val==predicted_val){
+					if(SVP_ORACLECONF)
+					confidence=1;
+					if(confidence){
+						vpmeas_eligible++;
+						vpmeas_conf_corr++;       // VPU generated a confident and correct value prediction.
+					}
+					else{
+						vpmeas_eligible++;
+						vpmeas_unconf_corr++;     // VPU generated an unconfident and correct value prediction. (LOST OPPORTUNITY)
+					}
+				}
+				else{
+					if(SVP_ORACLECONF)
+					confidence=0;
+					if (confidence){
+						vpmeas_eligible++;
+						vpmeas_conf_incorr++;     // VPU generated a confident and incorrect value prediction. (MISPREDICTION)
+					}
+					else{
+						vpmeas_eligible++;
+						vpmeas_unconf_incorr++; 				
+					}
+				}
+			}
+			if(PAY[index].pred_flag==0){
+				vpmeas_eligible++;
+				vpmeas_miss++;
+			}
+		}
+	}
+
 
 	void value_predictor::train_or_rep(uint64_t pc){
 		uint64_t ip_tag;
@@ -245,7 +301,7 @@
 		uint64_t pc_index=pc;
 		index_calc(pc_index);
 		
-		printf(">>>>>>>>>>>>>>>>>>>>>>before entry>>>>>>############vpq.tail value =%ld, >>>>>> ip_tag%lx <<<<<<< pc_index%lx pc-%lx\n",vpq.tail, ip_tag,pc_index,pc<<2);
+		//printf(">>>>>>>>>>>>>>>>>>>>>>before entry>>>>>>############vpq.tail value =%ld, >>>>>> ip_tag%lx <<<<<<< pc_index%lx pc-%lx\n",vpq.tail, ip_tag,pc_index,pc<<2);
 		if(tag_bits>0){
 			hit=(ip_tag==val_predictor[pc_index].tag);
 		}
@@ -347,49 +403,54 @@ unsigned int payload::get_size() {
    return(PAYLOAD_BUFFER_SIZE);
 }
 
+   void value_predictor::set_log_files(FILE* _stats_log,FILE* _phase_log){
+     this->stats_log = _stats_log;
+     this->phase_log = _phase_log;
+   }
+
 	void value_predictor::print_vpmeas(){
-		printf("VPU MEASUREMENTS-----------------------------------\n");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible", vpmeas_ineligible, 27.20, "Not eligible for value prediction.");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible_type", vpmeas_ineligible_type, 27.20, "Not eligible because of type.");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible_drop", vpmeas_ineligible_drop, 0.00, "VPU dropped otherwise-eligible instr. (neither predict nor train)\n                                                 // due to unavailable resource (e.g., VPQ_full_policy=1 and no free VPQ entry).");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_eligible", vpmeas_eligible, 72.80, "Eligible for value prediction.");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_miss", vpmeas_miss, 0.00, "VPU was unable to generate a value prediction (e.g., SVP miss).");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_conf_corr", vpmeas_conf_corr, 43.71, "VPU generated a confident and correct value prediction.");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_conf_incorr", vpmeas_conf_incorr, 0.12, "VPU generated a confident and incorrect value prediction. (MISPREDICTION)");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_unconf_corr", vpmeas_unconf_corr, 5.82, "VPU generated an unconfident and correct value prediction. (LOST OPPORTUNITY)");
-		printf("%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_unconf_incorr", vpmeas_unconf_incorr, 23.15, "VPU generated an unconfident and incorrect value prediction.");
+		fprintf(stats_log,"VPU MEASUREMENTS-----------------------------------\n");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible", vpmeas_ineligible, 27.20, "Not eligible for value prediction.");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible_type", vpmeas_ineligible_type, 27.20, "Not eligible because of type.");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_ineligible_drop", vpmeas_ineligible_drop, 0.00, "VPU dropped otherwise-eligible instr. (neither predict nor train)\n                                                 // due to unavailable resource (e.g., VPQ_full_policy=1 and no free VPQ entry).");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_eligible", vpmeas_eligible, 72.80, "Eligible for value prediction.");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_miss", vpmeas_miss, 0.00, "VPU was unable to generate a value prediction (e.g., SVP miss).");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_conf_corr", vpmeas_conf_corr, 43.71, "VPU generated a confident and correct value prediction.");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_conf_incorr", vpmeas_conf_incorr, 0.12, "VPU generated a confident and incorrect value prediction. (MISPREDICTION)");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_unconf_corr", vpmeas_unconf_corr, 5.82, "VPU generated an unconfident and correct value prediction. (LOST OPPORTUNITY)");
+		fprintf(stats_log,"%-25s : %10lu (%6.2f%%) // %s\n", "vpmeas_unconf_incorr", vpmeas_unconf_incorr, 23.15, "VPU generated an unconfident and incorrect value prediction.");
 	}
 
 	void value_predictor::print_cost_accounting() {
-		printf("COST ACCOUNTING\n");
+		fprintf(stats_log,"COST ACCOUNTING\n");
 		// One SVP entry
 		uint64_t conf = (uint64_t)ceil(log2((double)(confmax+1)));
 		int int_64_size = (int)sizeof(int64_t)*8;
 		uint64_t inst_ctr = (uint64_t)ceil(log2((double)VPQsize));
 		uint64_t svp_bits = tag_bits + conf + int_64_size + int_64_size + inst_ctr;
-		printf("   One SVP entry:\n");
-		printf("      %-14s : %3llu bits  // num_tag_bits\n", "tag", tag_bits);
-		printf("      %-14s : %3llu bits  // formula: (uint64_t)ceil(log2((double)(confmax+1)))\n", "conf", conf);
-		printf("      %-14s : %3d bits  // RISCV64 integer size.\n", "retired_value", int_64_size);
-		printf("      %-14s : %3d bits  // RISCV64 integer size. Competition opportunity: truncate stride to far fewer bits based on stride distribution of stride-predictable instructions.\n", "stride", (int)sizeof(stride_bits));
-		printf("      %-14s : %3d bits  // formula: (uint64_t)ceil(log2((double)VPQsize))\n", "instance ctr", inst_ctr);
-		printf("      -------------------------\n");
-		printf("      %-14s : %llud bits/SVP entry\n", "bits/SVP entry", svp_bits);
-		// One VPQ entry
+		fprintf(stats_log,"   One SVP entry:\n");
+		fprintf(stats_log,"      %-14s : %3lu bits  // num_tag_bits\n", "tag", tag_bits);
+		fprintf(stats_log,"      %-14s : %3lu bits  // formula: (uint64_t)ceil(log2((double)(confmax+1)))\n", "conf", conf);
+		fprintf(stats_log,"      %-14s : %3d bits  // RISCV64 integer size.\n", "retired_value", int_64_size);
+		fprintf(stats_log,"      %-14s : %3d bits  // RISCV64 integer size. Competition opportunity: truncate stride to far fewer bits based on stride distribution of stride-predictable instructions.\n", "stride", ((int)sizeof(stride_bits))*8);
+		fprintf(stats_log,"      %-14s : %3d bits  // formula: (uint64_t)ceil(log2((double)VPQsize))\n", "instance ctr", inst_ctr);
+		fprintf(stats_log,"      -------------------------\n");
+		fprintf(stats_log,"      %-14s : %lu bits/SVP entry\n", "bits/SVP entry", svp_bits);
+		// One Vstats_log,PQ entry
 		uint64_t vpq_bits = tag_bits + index_bits + int_64_size;
-		printf("   One VPQ entry:\n");
-		printf("      %-14s : %3llu bits  // num_tag_bits\n", "PC_tag", tag_bits);
-		printf("      %-14s : %3llu bits  // num_index_bits\n", "PC_index", index_bits);
-		printf("      %-14s : %3d bits  // RISCV64 integer size.\n", "value", int_64_size);
-		printf("      -------------------------\n");
-		printf("	  %-14s : %llu bits/VPQ entry\n", "bits/VPQ entry", vpq_bits);
+		fprintf(stats_log,"   One VPQ entry:\n");
+		fprintf(stats_log,"      %-14s : %3lu bits  // num_tag_bits\n", "PC_tag", tag_bits);
+		fprintf(stats_log,"      %-14s : %3lu bits  // num_index_bits\n", "PC_index", index_bits);
+		fprintf(stats_log,"      %-14s : %3d bits  // RISCV64 integer size.\n", "value", int_64_size);
+		fprintf(stats_log,"      -------------------------\n");
+		fprintf(stats_log,"	  %-14s : %lu bits/VPQ entry\n", "bits/VPQ entry", vpq_bits);
 		uint64_t total_svp_cost = (1 << index_bits) * svp_bits;
 		uint64_t total_vpq_cost = VPQsize * vpq_bits;
-		// Total storage cost
-		printf("   Total storage cost (bits) = %llu ", total_svp_cost);
-		printf(" (%llu SVP entries x %llu bits/SVP entry) + ", (1 << index_bits), total_svp_cost);
-		printf("%llu ", total_vpq_cost);
-		printf(" (%llu VPQ entries x %llu bits/VPQ entry)\n", VPQsize, vpq_bits);
-		printf(" = %llu bits\n", total_svp_cost + total_vpq_cost);
-		printf("Total storage cost (bytes) =  %.2f B (%.2f KB)\n", (double)(total_svp_cost + total_vpq_cost) / 8.0, (double)(total_svp_cost + total_vpq_cost) / 1024.0);
+		// Totalstats_log, storage cost
+		fprintf(stats_log,"   Total storage cost (bits) = %lu ", total_svp_cost);
+		fprintf(stats_log," (%lu SVP entries x %lu bits/SVP entry) + ", (1 << index_bits), total_svp_cost);
+		fprintf(stats_log,"%lu ", total_vpq_cost);
+		fprintf(stats_log," (%lu VPQ entries x %lu bits/VPQ entry) ", VPQsize, vpq_bits);
+		fprintf(stats_log," = %lu bits\n", total_svp_cost + total_vpq_cost);
+		fprintf(stats_log,"Total storage cost (bytes) =  %.2f B (%.2f KB)\n", (double)(total_svp_cost + total_vpq_cost) / 8.0, (double)(total_svp_cost + total_vpq_cost) / 1024.0);
 	}

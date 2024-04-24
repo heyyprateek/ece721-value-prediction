@@ -176,7 +176,7 @@ void pipeline_t::rename2() {
 			PAY.buf[index].C_phys_reg=REN->rename_rdst(PAY.buf[index].C_log_reg);
 		}
       // FIX_ME #3 END
-		//changes by Abhishek Bajaj
+		//changes by Abhishek/Prateek
 	//	printf("pc=%lx \n",PAY.buf[index].pc);
 		if(VALUE_PRED_EN && !PERFECT_VALUE_PRED){
 			if(PAY.buf[index].C_valid && PAY.buf[index].eligible_inst){
@@ -193,7 +193,7 @@ void pipeline_t::rename2() {
 				assert(PAY.buf[index].vpq_entry_flag==0);	
 				val_predictor->checkpoint(PAY.buf[index].vpq_tail_chkpt,PAY.buf[index].vpq_t_phase_chkpt);			}
 		}
-		//changes end by Abhishek Bajaj
+		//changes end by Abhishek/Prateek
 		
       // FIX_ME #4
       // Get the instruction's branch mask.
